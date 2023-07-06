@@ -1,33 +1,36 @@
 import React, { Component, useState } from 'react';
-import { Collapse, Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink } from 'reactstrap';
+import { Collapse, Nav, Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink } from 'reactstrap';
+import { NavLink as RouteNavLink } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-import './NavMenu.css';
+import '../styles/NavMenu.css';
 
 export function NavMenu() {
 
   const [collapsed, setCollapsed] = useState(true)
-
   const toggleNavbar = () => {
     setCollapsed(!collapsed)
   }
 
   return (
     <header>
-      <Navbar className="navbar-expand-sm navbar-toggleable-sm ng-white border-bottom box-shadow mb-3" container light>
-        <NavbarBrand tag={Link} to="/">audio_modifier</NavbarBrand>
-        <NavbarToggler onClick={toggleNavbar} className="mr-2" />
-        <Collapse className="d-sm-inline-flex flex-sm-row-reverse" isOpen={collapsed} navbar>
-          <ul className="navbar-nav flex-grow">
+      <Navbar className="navbar-expand-sm navbar-toggleable-sm ng-light border-bottom box-shadow mb-3 h-100 flex flex-sm-column flex-row" container={false} light>
+        <NavbarBrand className='mb-2 mx-3' tag={Link} to="/">audio_modifier</NavbarBrand>
+        <NavbarToggler onClick={toggleNavbar} className="mb-2 mx-3" />
+        <Collapse className="align-items-start me-auto w-100" isOpen={collapsed} navbar>
+          <Nav vertical pills className="w-100">
             <NavItem>
-              <NavLink tag={Link} className="text-dark" to="/home">Home</NavLink>
+              {/* <NavLink tag={Link} className="text-dark" href='/'>Home</NavLink> */}
+              <RouteNavLink className="nav-link" to="/">Home</RouteNavLink>
             </NavItem>
             <NavItem>
-              <NavLink tag={Link} className="text-dark" to="/counter">Counter</NavLink>
+              {/* <NavLink tag={Link} className="text-dark" to="/counter">Counter</NavLink> */}
+              <RouteNavLink className="nav-link" to="/counter">Counter</RouteNavLink>
             </NavItem>
             <NavItem>
-              <NavLink tag={Link} className="text-dark" to="/fetch-data">Fetch data</NavLink>
+              {/* <NavLink tag={Link} className="text-dark" to="/fetch-data">Fetch data</NavLink> */}
+              <RouteNavLink className="nav-link" to="/fetch-data">Fetch data</RouteNavLink>
             </NavItem>
-          </ul>
+          </Nav>
         </Collapse>
       </Navbar>
     </header>

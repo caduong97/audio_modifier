@@ -1,6 +1,6 @@
 
 import App from "./App";
-import Home from "./components/Home";
+import Home from "./pages/Home";
 import { createBrowserRouter } from "react-router-dom"
 
 
