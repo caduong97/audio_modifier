@@ -17,6 +17,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="6.0.4" />
     <PackageReference Include="Microsoft.AspNetCore.SpaProxy" Version="6.0.4" />
+    <PackageReference Include="NAudio" Version="2.1.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -29,6 +30,17 @@
     <None Remove="Microsoft.AspNetCore.SpaServices.Extensions" />
     <None Remove="ClientApp\src\App.test.js" />
     <None Remove="Microsoft.AspNetCore.SpaProxy" />
+    <None Remove="NAudio" />
+    <None Remove="Services\" />
+    <None Remove="Controllers\" />
+    <None Remove="DTOs\" />
+    <None Remove="Helpers\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Services\" />
+    <Folder Include="Controllers\" />
+    <Folder Include="DTOs\" />
+    <Folder Include="Helpers\" />
   </ItemGroup>
   <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">
     <!-- Ensure Node.js is installed -->
