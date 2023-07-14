@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Cors.Infrastructure;
+﻿using audio_modifier.Services;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,7 +10,6 @@ IWebHostEnvironment environment = builder.Environment;
 
 // Add services to the container.
 
-builder.Services.AddControllers();
 
 // Configure frontend built path
 builder.Services.AddSpaStaticFiles(configuration => {
@@ -16,16 +17,19 @@ builder.Services.AddSpaStaticFiles(configuration => {
 });
 
 CorsPolicy corsPolicy = new CorsPolicyBuilder()
-    .WithOrigins(new[] { "http://localhost:3333" })
+    .WithOrigins(new[] { "https://localhost:3333" })
     .AllowAnyHeader()
     .AllowCredentials()
     .AllowAnyMethod()
+    .WithExposedHeaders("Content-Disposition")
     .Build();
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowDev", corsPolicy);
 });
+
+builder.Services.AddControllers();
 
 
 var app = builder.Build();
@@ -41,6 +45,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 
+app.UseCors("AllowDev");
 
 app.MapControllerRoute(
     name: "default",
