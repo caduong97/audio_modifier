@@ -6,15 +6,21 @@ import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import reportWebVitals from './reportWebVitals';
 import router from './AppRoutes';
 import './custom.css';
+import { Provider as ReduxProvider } from 'react-redux'
+import store from './store';
+
 
 const baseUrl = document.getElementsByTagName('base')[0].getAttribute('href');
 const rootElement = document.getElementById('root') as HTMLElement;
 const root = createRoot(rootElement);
 
 root.render(
-  <React.StrictMode>
-    <RouterProvider router={router} />
-  </React.StrictMode>
+  // <React.StrictMode>
+    <ReduxProvider store={store}>
+      <RouterProvider router={router} />
+    </ReduxProvider>
+  // </React.StrictMode>
+  
 );
 
 // If you want your app to work offline and load faster, you can change
