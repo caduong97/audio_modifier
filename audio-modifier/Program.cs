@@ -32,6 +32,9 @@ builder.Services.AddCors(options =>
 builder.Services.AddControllers();
 
 
+builder.Services.AddScoped<IAudioBasicService, AudioBasicService>();
+builder.Services.AddScoped<IMergeService, MergeService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
