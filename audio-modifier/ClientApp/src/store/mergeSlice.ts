@@ -1,12 +1,12 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import ApiHelper from "../helpers/ApiHelper";
-import AudioMetadata from "../models/AudioMetadata";
+import AudioMetadataBase, { AudioMetadataMp3, AudioMetadataWav } from "../models/AudioMetadata";
 import { ApiRequestStatus } from ".";
 import MergeAudioFilesRequest from "../models/merge/MergeAudioFilesRequest";
 
 interface MergeSliceState {
   preprocessStatus: ApiRequestStatus,
-  audioMetadatas: AudioMetadata[]
+  audioMetadatas: (AudioMetadataBase | AudioMetadataWav | AudioMetadataMp3)[]
   audioFiles: File[]
   mergeStatus: ApiRequestStatus,
 
@@ -51,11 +51,23 @@ export const mergeSlice = createSlice({
     
 })
 
-export const preprocessAudios = createAsyncThunk<AudioMetadata[], FormData>(
+export const preprocessAudios = createAsyncThunk<(AudioMetadataBase | AudioMetadataWav | AudioMetadataMp3)[], FormData>(
   'merge/preprocessAudiosForMerging', 
-  async (files) => {
-    const response = await ApiHelper.postWithFiles('/merge/preprocessAudiosForMerging', files)
-    return response.data as AudioMetadata[]
+  async (form) => {
+    const formFiles = form.getAll("files") as File[]
+    if (formFiles.some(f => f.type !== formFiles[0].type)) {
+      throw new Error("Cannot perform audio batch preprocessing. Inconsistent file extensions detected.")
+    }
+    if (formFiles[0].type === "audio/wav") {
+      const response = await ApiHelper.postWithFiles('/merge/preprocessWavFiles', form)
+      return response.data as AudioMetadataWav[]
+    } else if (formFiles[0].type === "audio/mpeg") {
+      const response = await ApiHelper.postWithFiles('/merge/preprocessMp3Files', form)
+      return response.data as AudioMetadataMp3[]
+    } else {
+      throw new Error("Cannot perform audio batch preprocessing. Audio format not supported.")
+    }
+    
   }
 )
 

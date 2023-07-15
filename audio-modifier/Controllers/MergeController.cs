@@ -26,13 +26,22 @@ namespace audio_modifier.Controllers
             _audioBasicService = audioBasicService;
         }
 
-        [HttpPost("preprocessAudiosForMerging")]
+        [HttpPost("preprocessWavFiles")]
         [RequestSizeLimit(536870912)]
-        public IActionResult PreprocessAudiosForMerging([FromForm] List<IFormFile> files)
+        public IActionResult PreprocessWavFiles ([FromForm] List<IFormFile> files)
         {
-            var audioDtos = files.Select(file => _audioBasicService.PreprocessAudio(file));
+            var audioDtos = files.Select(file => _audioBasicService.ProprocessWavAudioFiles(file));
             return Ok(audioDtos);
         }
+
+        [HttpPost("preprocessMp3Files")]
+        [RequestSizeLimit(536870912)]
+        public IActionResult PreprocessMp3Files([FromForm] List<IFormFile> files)
+        {
+            var audioDtos = files.Select(file => _audioBasicService.ProprocessMp3AudioFiles(file));
+            return Ok(audioDtos);
+        }
+
 
         [HttpPost]
         [RequestSizeLimit(536870912)]

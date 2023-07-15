@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection.PortableExecutable;
 using audio_modifier.DTOs;
 using NAudio.Wave;
 
@@ -6,8 +7,10 @@ namespace audio_modifier.Services
 {
 	public interface IAudioBasicService
 	{
-		AudioDto PreprocessAudio(IFormFile audioFile);
-		string WavToMp3(); 
+        AudioWavDto ProprocessWavAudioFiles(IFormFile audioFile);
+        AudioMp3Dto ProprocessMp3AudioFiles(IFormFile audioFile);
+
+        string WavToMp3(); 
 	}
 
 	public class AudioBasicService: IAudioBasicService
@@ -16,12 +19,12 @@ namespace audio_modifier.Services
 		{
 		}
 
-        public AudioDto PreprocessAudio(IFormFile audioFile)
+        public AudioWavDto ProprocessWavAudioFiles(IFormFile audioFile)
         {
             using var reader = new WaveFileReader(audioFile.OpenReadStream());
             var format = reader.WaveFormat;
 
-            var audioDto = new AudioDto()
+            var audioDto = new AudioWavDto()
             {
                 FileName = audioFile.FileName,
                 SampleRate = format.SampleRate,
@@ -32,6 +35,27 @@ namespace audio_modifier.Services
 
             return audioDto;
         }
+
+        public AudioMp3Dto ProprocessMp3AudioFiles(IFormFile audioFile)
+        {
+            var frame = Mp3Frame.LoadFromStream(audioFile.OpenReadStream());
+
+            var audioDto = new AudioMp3Dto()
+            {
+                FileName = audioFile.FileName,
+                SampleRate = frame.SampleRate,
+                Format = frame.MpegVersion.ToString(),
+                BitRate = frame.BitRate,
+                ChannelMode = frame.ChannelMode.ToString(),
+                Layer = frame.MpegLayer.ToString(),
+                Copyright = frame.Copyright
+            };
+
+            return audioDto;
+           
+        }
+
+
 
         public string WavToMp3()
         {

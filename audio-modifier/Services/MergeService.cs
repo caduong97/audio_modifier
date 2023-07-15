@@ -1,7 +1,10 @@
 ﻿using System;
 using audio_modifier.DTOs;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Mvc;
+using NAudio.Lame;
 using NAudio.Wave;
+using NLayer.NAudioSupport;
 
 namespace audio_modifier.Services
 {
@@ -32,7 +35,8 @@ namespace audio_modifier.Services
             }
             if (fileExtensions.First() == ".mp3")
             {
-
+                var result = MergeMp3Files(files, requestDto);
+                return result;
             }
 
 
@@ -87,9 +91,71 @@ namespace audio_modifier.Services
             }
             catch (Exception e)
             {
-                throw new Exception("Cannot merge audio files. Error: " + e);
+                throw new Exception("Cannot merge wav files. Error: " + e);
             }
 
+
+        }
+
+        /// <summary>
+        /// Merge (concatenate) mp3 files.
+        /// </summary>
+        private AudioFileResult MergeMp3Files(List<IFormFile> files, MergeAudioFilesRequestDto requestDto)
+        {
+
+            try
+            {
+                // Create a mixer object
+                // This will be used for merging files together
+                var mixer = new WaveMixerStream32
+                {
+                    AutoStop = true
+                };
+
+                foreach (var file in files)
+                {
+                    var builder = new Mp3FileReader.FrameDecompressorBuilder(wf => new Mp3FrameDecompressor(wf));
+                    // TODO: figure out a way to decode mp3 on Mac (with Mac Os support codecs or something)
+                    // https://www.markheath.net/post/managed-mp3-decoding-nlayer-naudio
+                    // https://github.com/naudio/NAudio/issues/451
+                    Mp3FileReaderBase reader = new Mp3FileReaderBase(file.OpenReadStream(), waveFormat => new Mp3FrameDecompressor(waveFormat));
+
+                    var waveStream = WaveFormatConversionStream.CreatePcmStream(reader);
+                    var channel = new WaveChannel32(waveStream)
+                    {
+                        //Set the volume
+                        Volume = 0.5f
+                    };
+
+                    // add channel as an input stream to the mixer
+                    mixer.AddInputStream(channel);
+                }
+
+                // convert wave stream from mixer to mp3
+                using var output = new MemoryStream();
+                var wave32 = new Wave32To16Stream(mixer);
+                var mp3Writer = new LameMP3FileWriter(output, wave32.WaveFormat, 128);
+                wave32.CopyTo(mp3Writer);
+
+                // close all streams
+                wave32.Close();
+                mp3Writer.Close();
+
+                
+
+                var fileByteArray = output.ToArray();
+                var fileName = requestDto.OutputFileName != null ? requestDto.OutputFileName : requestDto.JobId.ToString();
+                return new AudioFileResult()
+                {
+                    Name = fileName + ".mp3",
+                    ByteArray = fileByteArray
+                };
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Cannot merge mp3 files. Error: " + e);
+
+            }
 
         }
     }
