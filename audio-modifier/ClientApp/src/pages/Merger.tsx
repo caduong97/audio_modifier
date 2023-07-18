@@ -1,36 +1,55 @@
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import UploadForm from "../components/uploads/UploadForm";
 import UploadedList from "../components/uploads/UploadedList";
-import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownToggle, Input, InputGroup, InputGroupText } from "reactstrap";
+import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownToggle, FormGroup, Input, InputGroup, InputGroupText, Label, Tooltip, UncontrolledTooltip } from "reactstrap";
 import { audioMetadatasCleared, mergeAudios } from "../store/mergeSlice";
 import { AppDispatch, RootState } from "../store";
 import { useDispatch, useSelector } from "react-redux";
 import MergeAudioFilesRequest from "../models/merge/MergeAudioFilesRequest";
 import { v4 as uuidv4 } from 'uuid';
 import { CaretDownFill } from "react-bootstrap-icons";
+import AudioIntervalType from "../models/AudioIntervalTypeEnum";
+import { InfoCircleFill } from "react-bootstrap-icons";
+
 
 export default function Merger() {
   const [audioFiles, setAudioFiles] = useState<File[]>([])
   const [dropdownOpen, setDropdownOpen] = useState<boolean>(false)
+  const [intervalType, setIntervalType] = useState<number>(0)
   const dispatch: AppDispatch = useDispatch()
   const audioMetadatas = useSelector((state: RootState) => state.merge.audioMetadatas)
-  // const [leadingSilence, setLeadingSilence] = useState<number>(0)
-  // const [trailingSilence, setTrailingSilence] = useState<number>(0)
-  // const [interval, setInterval] = useState<number>(0)
-  // const [saveAs, setSaveAs] = useState<string>("")
 
   const [mergeAudioFilesRequest, setMergeAudioFilesRequest] = useState<MergeAudioFilesRequest>({
     jobId: uuidv4(),
-    interval: 0,
     leadingSilence: 0,
-    trailingSilence: 0
+    sharedInterval: 0,
+    individualIntervals: {},
   })
 
 
   const handleClearQueue = () => {
     setAudioFiles([])
+    setIntervalType(0)
     dispatch(audioMetadatasCleared())
   }
+
+  useEffect(() => {
+    if (intervalType === AudioIntervalType.Individual_Interval && 
+      audioFiles.length > 0
+    ) {
+      audioFiles.forEach(au => {
+        if (mergeAudioFilesRequest.individualIntervals[au.name] == null) {
+          const updatedIndividualIntervals = {...mergeAudioFilesRequest.individualIntervals}
+          updatedIndividualIntervals[au.name] = 0
+          setMergeAudioFilesRequest({...mergeAudioFilesRequest, individualIntervals: {...updatedIndividualIntervals}})
+        }
+      });  
+    }
+    if (audioFiles.length === 0) {
+      setMergeAudioFilesRequest({...mergeAudioFilesRequest, individualIntervals: {}})
+    }
+
+  }, [audioFiles, intervalType])
 
   const toggle = () => setDropdownOpen((prevState) => !prevState);
 
@@ -38,12 +57,30 @@ export default function Merger() {
     setMergeAudioFilesRequest({...mergeAudioFilesRequest, leadingSilence: parseFloat(e.target.value)})
   }
 
-  const handleTrailingSilenceChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setMergeAudioFilesRequest({...mergeAudioFilesRequest, trailingSilence: parseFloat(e.target.value)})
+  const handleSharedIntervalSilenceChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setMergeAudioFilesRequest({...mergeAudioFilesRequest, sharedInterval: parseFloat(e.target.value)})
   }
 
-  const handleIntervalSilenceChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setMergeAudioFilesRequest({...mergeAudioFilesRequest, interval: parseFloat(e.target.value)})
+  const intevalTypeTexts = () => {
+    const enumeration = AudioIntervalType;
+    const separatorRegex = /_/g;
+    return (Object.keys(enumeration) as Array<keyof AudioIntervalType>)
+      .filter(key => isNaN(Number(key)))
+      .filter(key => typeof enumeration[key as any] === "number" || typeof enumeration[key as any] === "string")
+      .map(key => ({
+          id: parseInt(enumeration[key as any]),
+          description: String(key).replace(separatorRegex, ' '),
+      }));
+  }
+
+  const handleIndividualIntervalsSilenceChange = (e: ChangeEvent<HTMLInputElement>, key: string) => {
+    const updatedIndividualIntervals = {...mergeAudioFilesRequest.individualIntervals}
+    updatedIndividualIntervals[key] = parseInt(e.target.value, 10)
+    setMergeAudioFilesRequest({...mergeAudioFilesRequest, individualIntervals: {...updatedIndividualIntervals}})
+  }
+
+  const handleIntervalTypeChange = (e: any) => {
+    setIntervalType(e)
   }
 
   const handleSaveAsChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -57,6 +94,14 @@ export default function Merger() {
     //   leadingSilence: 1,
     //   trailingSilence: 3
     // }
+    const request = {...mergeAudioFilesRequest}
+    if (intervalType === AudioIntervalType.Shared_Interval) {
+      request.individualIntervals = {}
+    } else if (intervalType === AudioIntervalType.Individual_Interval) {
+      request.sharedInterval = 0
+    }
+    // console.log("handleMerge", request)
+
     const formData = new FormData();
     for (let i = 0; i < audioFiles.length; i++) {
       
@@ -65,7 +110,7 @@ export default function Merger() {
     }
     console.log('handleMerge', formData.getAll("files"))
 
-    dispatch(mergeAudios({ form: formData, params: mergeAudioFilesRequest}))
+    dispatch(mergeAudios({ form: formData, params: request}))
   }
 
   return (
@@ -107,29 +152,85 @@ export default function Merger() {
               <DropdownItem text className="d-flex align-items-center">
                 <p className="w-100 mb-0 flex-grow-1">Leading silence:</p>
                 <InputGroup >
-                  <Input type="number" placeholder="0" value={mergeAudioFilesRequest.leadingSilence} onChange={handleLeadingSilenceChange} />
+                  <Input type="number" min={0}  placeholder="0" value={mergeAudioFilesRequest.leadingSilence} onChange={handleLeadingSilenceChange} />
                   <InputGroupText>
                     s
                   </InputGroupText>
                 </InputGroup>
               </DropdownItem>
-              <DropdownItem text className="d-flex align-items-center">
-                <p className="w-100 mb-0 flex-grow-1">Trailing silence:</p>
-                <InputGroup >
-                  <Input type="number" placeholder="0" value={mergeAudioFilesRequest.trailingSilence} onChange={handleTrailingSilenceChange} />
-                  <InputGroupText>
-                    s
-                  </InputGroupText>
-                </InputGroup>
-              </DropdownItem>
-              <DropdownItem text className="d-flex align-items-center">
-                <p className="w-100 mb-0 flex-grow-1">Interval:</p>
-                <InputGroup >
-                  <Input type="number" placeholder="0" value={mergeAudioFilesRequest.interval} onChange={handleIntervalSilenceChange} />
-                  <InputGroupText>
-                    s
-                  </InputGroupText>
-                </InputGroup>
+              <DropdownItem text className="">
+                <p className="w-100 d-flex align-items-center">
+                  Intervals
+                  <InfoCircleFill className="ms-2" id="TooltipExample"/>
+                </p>
+                <UncontrolledTooltip
+                  placement="top"
+                  autohide={false}
+                  target="TooltipExample"
+                >
+                  <p className="text-start">
+                  Set interval in seconds at the end of each audio file, including the last file in queue. <br /> 
+                  <b>Shared Interval</b> applies the same interval for all files. <br /> 
+                  <b>Individual Interval</b> allow specify a different interval for each individual file.
+                  </p>
+                </UncontrolledTooltip>
+
+                <FormGroup                            >
+                  {
+                    intevalTypeTexts().map(o => 
+                      <FormGroup 
+                        check key={`key-${o.id}`}
+                        className={o.id === AudioIntervalType.Shared_Interval ? "d-flex align-items-center" : "d-block"}
+                        onClick={() => handleIntervalTypeChange(o.id)}
+                      >
+                        <Label htmlFor={o.id.toString()} check className="w-100 flex-grow-1 mb-2">
+                          <Input
+                            id={o.id.toString()}
+                            name="intervalType"
+                            type="radio"
+                            value={o.id}
+                            checked={intervalType === o.id}
+                            onChange={() => {}}
+                          />
+                          {' '}
+                          {o.description}
+                        </Label>
+                        {
+                          (o.id == AudioIntervalType.Shared_Interval && intervalType == AudioIntervalType.Shared_Interval) &&
+                          <InputGroup className="w-50">
+                            <Input type="number" min={0} placeholder="0" value={mergeAudioFilesRequest.sharedInterval} onChange={handleSharedIntervalSilenceChange} />
+                            <InputGroupText>
+                              s
+                            </InputGroupText>
+                          </InputGroup>
+                        }
+
+                        {
+                          (o.id == AudioIntervalType.Individual_Interval && intervalType == AudioIntervalType.Individual_Interval) &&
+                          audioFiles.map((au, index) => (
+                            <DropdownItem text className="d-flex align-items-center px-0" key={`individu-inter-${index}`}>
+                              <p 
+                                className="w-75 flex-grow-1 mb-0 text-nowrap" 
+                                style={{
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis'
+                                }}>{index + 1}. {au.name}</p>
+                              <InputGroup className="w-50">
+                                <Input type="number" min={0} placeholder="0" value={mergeAudioFilesRequest.individualIntervals[au.name]} onChange={(e) => handleIndividualIntervalsSilenceChange(e,au.name)} />
+                                <InputGroupText>
+                                  s
+                                </InputGroupText>
+                              </InputGroup>
+                            </DropdownItem>
+                          ))
+                          
+                        }
+                        
+                      </FormGroup>
+                    )
+                  }
+                </FormGroup>
+                <br />
               </DropdownItem>
               <DropdownItem text>
                 Save as:

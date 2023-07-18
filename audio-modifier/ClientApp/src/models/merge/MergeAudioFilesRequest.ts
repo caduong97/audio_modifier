@@ -1,7 +1,9 @@
+type IndividualIntervals = Record<string, number>
+
 export default interface MergeAudioFilesRequest {
   jobId: string
-  interval: number
+  sharedInterval: number
+  individualIntervals: IndividualIntervals
   leadingSilence: number
-  trailingSilence: number
   outputFileName?: string
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.Json;
 using audio_modifier.DTOs;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Mvc;
@@ -60,6 +61,9 @@ namespace audio_modifier.Services
                 using var writer = new WaveFileWriter(output, outputWaveFormat);
                 var buffer = new byte[outputWaveFormat.AverageBytesPerSecond * 4];
 
+                var individualIntervalDictionary = JsonSerializer.Deserialize<Dictionary<string, float>>(requestDto.IndividualIntervals);
+
+                int fileIndex = 0;
                 foreach (var file in files)
                 {
                     using var reader = new WaveFileReader(file.OpenReadStream());
@@ -72,10 +76,37 @@ namespace audio_modifier.Services
                     }
 
                     int read;
+                    if (fileIndex == 0)
+                    {
+                        var leadingSilenceSamples = (int)(reader.WaveFormat.SampleRate * requestDto.LeadingSilence);
+                        var leadingSilenceBuffer = new byte[leadingSilenceSamples * reader.WaveFormat.BlockAlign];
+                        writer.Write(leadingSilenceBuffer, 0, leadingSilenceBuffer.Length);
+
+                    } 
+
                     while ((read = reader.Read(buffer, 0, buffer.Length)) > 0)
                     {
                         writer.Write(buffer, 0, buffer.Length);
                     }
+
+                    // Request contains different silence interval after each file
+                    if (individualIntervalDictionary.Count == files.Count)
+                    {
+                        var intervalAfterFile = individualIntervalDictionary[file.FileName];
+                        var intervalSamples = (int)(reader.WaveFormat.SampleRate * intervalAfterFile);
+                        var intervalBuffer = new byte[intervalSamples * reader.WaveFormat.BlockAlign];
+                        writer.Write(intervalBuffer, 0, intervalBuffer.Length);
+                    }
+
+                    // Request has a shared silence interval after each file
+                    if (individualIntervalDictionary.Count == 0 && requestDto.SharedInterval > 0)
+                    {
+                        var intervalSamples = (int)(reader.WaveFormat.SampleRate * requestDto.SharedInterval);
+                        var intervalBuffer = new byte[intervalSamples * reader.WaveFormat.BlockAlign];
+                        writer.Write(intervalBuffer, 0, intervalBuffer.Length);
+                    }
+
+                    fileIndex++;
                 }
 
                 output.Position = 0;
