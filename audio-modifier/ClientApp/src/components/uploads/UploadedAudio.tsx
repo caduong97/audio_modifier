@@ -11,7 +11,9 @@ interface UploadedAudioProps {
 export default function UploadedAudio({ audioMetadata }: UploadedAudioProps) {
 
   const sampleRateFormatted = audioMetadata.sampleRate / 1000 + "kHz"
-  // const durationFormatted = timeSpanStringFormatted(audioMetadata.duration)
+  // const durationFormatted = (audioMetadata as AudioMetadataWav).duration 
+  //   ? timeSpanStringFormatted((audioMetadata as AudioMetadataWav).duration)
+  //   : null
 
   return (
     <Card
@@ -19,7 +21,7 @@ export default function UploadedAudio({ audioMetadata }: UploadedAudioProps) {
       className="mb-2 me-md-2 w-0"
       style={{
         width: '100%',
-        maxWidth: '200px'
+        maxWidth: '230px'
         
       }}
     >
@@ -38,15 +40,29 @@ export default function UploadedAudio({ audioMetadata }: UploadedAudioProps) {
         <CardText className="m-0">
           Sample rate: {sampleRateFormatted}
         </CardText>
-        {/* <CardText className="m-0">
-          Bits per sample: {audioMetadata.bitDepth}
-        </CardText>
-        <CardText className="m-0">
-          Audio channel: {audioMetadata.channels}
-        </CardText>
-        <CardText className="m-0">
-          Duration: {durationFormatted}
-        </CardText> */}
+        {
+          (audioMetadata as AudioMetadataWav).bitDepth &&
+          <>
+            <CardText className="m-0">
+              Bits per sample: {(audioMetadata as AudioMetadataWav).bitDepth}
+            </CardText>
+            <CardText className="m-0">
+              Audio channels: {(audioMetadata as AudioMetadataWav).channels}
+            </CardText>
+            <CardText className="m-0">
+              Duration: {timeSpanStringFormatted((audioMetadata as AudioMetadataWav).duration)}
+            </CardText>
+          </>
+        }
+
+        {
+          (audioMetadata as AudioMetadataMp3).bitRate &&
+          <>
+            <CardText className="m-0">
+              Audio channels: {(audioMetadata as AudioMetadataMp3).channelMode}
+            </CardText>
+          </>
+        }
         
       </CardBody>
     </Card>
