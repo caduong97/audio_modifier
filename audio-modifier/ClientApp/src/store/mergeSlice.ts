@@ -7,7 +7,6 @@ import MergeAudioFilesRequest from "../models/merge/MergeAudioFilesRequest";
 interface MergeSliceState {
   preprocessStatus: ApiRequestStatus,
   audioMetadatas: (AudioMetadataBase | AudioMetadataWav | AudioMetadataMp3)[]
-  audioFiles: File[]
   mergeStatus: ApiRequestStatus,
 
 }
@@ -17,13 +16,18 @@ export const mergeSlice = createSlice({
   initialState: {
     preprocessStatus: 'idle',
     audioMetadatas: [],
-    audioFiles: [],
     mergeStatus: "idle"
   } as MergeSliceState,
   reducers: {
     audioMetadatasCleared(state) {
       state.audioMetadatas = []
-    } 
+    },
+    audioMetadatasUpdated(state, action) {
+      state.audioMetadatas = action.payload
+    },
+    audioMetadataRemoved(state, action) {
+      state.audioMetadatas = state.audioMetadatas.filter(au => au.fileName !== action.payload)
+    }
   },
   extraReducers(builder) {
     builder
@@ -101,7 +105,7 @@ export const mergeAudios = createAsyncThunk<any, MergeAudiosRequestPayload>(
 
 
 
-export const { audioMetadatasCleared } = mergeSlice.actions;
+export const { audioMetadatasCleared, audioMetadatasUpdated, audioMetadataRemoved } = mergeSlice.actions;
 
 const mergeReducer = mergeSlice.reducer;
 export default mergeReducer

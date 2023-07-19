@@ -12,6 +12,9 @@ import { InfoCircleFill } from "react-bootstrap-icons";
 import SettingsDropdown from "../components/SettingsDropdown";
 import SettingItem from "../components/SettingItem";
 import MoreInfo from "../components/MoreInfo";
+import { DndProvider } from "react-dnd";
+import {HTML5Backend} from "react-dnd-html5-backend";
+import {TouchBackend} from "react-dnd-touch-backend";
 
 
 export default function Merger() {
@@ -35,22 +38,39 @@ export default function Merger() {
   }
 
   useEffect(() => {
-    if (intervalType === AudioIntervalType.Individual_Interval && 
-      audioFiles.length > 0
-    ) {
-      audioFiles.forEach(au => {
-        if (mergeAudioFilesRequest.individualIntervals[au.name] == null) {
+
+    if (audioMetadatas.length > 0) {
+      audioMetadatas.forEach(au => {
+        if (mergeAudioFilesRequest.individualIntervals[au.fileName] == null) {
           const updatedIndividualIntervals = {...mergeAudioFilesRequest.individualIntervals}
-          updatedIndividualIntervals[au.name] = 0
+          updatedIndividualIntervals[au.fileName] = 0
           setMergeAudioFilesRequest({...mergeAudioFilesRequest, individualIntervals: {...updatedIndividualIntervals}})
         }
-      });  
-    }
-    if (audioFiles.length === 0) {
-      setMergeAudioFilesRequest({...mergeAudioFilesRequest, individualIntervals: {}})
+      }) 
     }
 
-  }, [audioFiles, intervalType])
+    if (audioMetadatas.length === 0) {
+      setMergeAudioFilesRequest({...mergeAudioFilesRequest, individualIntervals: {}})
+      
+    }
+
+  }, [audioMetadatas])
+
+  useEffect(() => {
+    if (audioFiles.length === 0 && audioMetadatas.length > 0) {
+      dispatch(audioMetadatasCleared())
+    }
+  }, [audioFiles])
+
+  const isTouchDevice = () => {
+    if ("ontouchstart" in window) {
+      return true;
+    }
+    return false;
+  };
+
+  // Assigning backend based on touch support on the device
+  const backendForDND = isTouchDevice() ? TouchBackend : HTML5Backend;
 
   const handleLeadingSilenceChange = (e: ChangeEvent<HTMLInputElement>) => {
     setMergeAudioFilesRequest({...mergeAudioFilesRequest, leadingSilence: parseFloat(e.target.value)})
@@ -129,119 +149,11 @@ export default function Merger() {
           >Clear queue</Button>
         </div>
         
-        
-        <UploadedList/>
+        <DndProvider backend={backendForDND}>
+          <UploadedList/>
+        </DndProvider>
 
         <div className="d-flex flex-column flex-sm-row justify-content-end mt-3">
-          {/* <Dropdown 
-            isOpen={dropdownOpen} toggle={toggle} direction="down"
-            className="w-100 me-sm-3"
-            style={{
-              minWidth: '340px'
-            }}  
-          >
-            <DropdownToggle caret color="info" outline className="mb-3 mb-sm-0 ms-auto d-block">Settings</DropdownToggle>
-            <DropdownMenu end className="w-100"
-              style={{
-                maxWidth: '340px'
-              }}  
-            >
-              <DropdownItem header>Advanced</DropdownItem>
-              <DropdownItem divider />
-              <DropdownItem text className="d-flex align-items-center">
-                <p className="w-100 mb-0 flex-grow-1">Leading silence:</p>
-                <InputGroup >
-                  <Input type="number" min={0}  placeholder="0" value={mergeAudioFilesRequest.leadingSilence} onChange={handleLeadingSilenceChange} />
-                  <InputGroupText>
-                    s
-                  </InputGroupText>
-                </InputGroup>
-              </DropdownItem>
-              <DropdownItem text className="">
-                <p className="w-100 d-flex align-items-center">
-                  Intervals
-                  <InfoCircleFill className="ms-2" id="TooltipExample"/>
-                </p>
-                <UncontrolledTooltip
-                  placement="top"
-                  autohide={false}
-                  target="TooltipExample"
-                >
-                  <p className="text-start">
-                  Set interval in seconds at the end of each audio file, including the last file in queue. <br /> 
-                  <b>Shared Interval</b> applies the same interval for all files. <br /> 
-                  <b>Individual Interval</b> allow specify a different interval for each individual file.
-                  </p>
-                </UncontrolledTooltip>
-
-                <FormGroup                            >
-                  {
-                    intevalTypeTexts().map(o => 
-                      <FormGroup 
-                        check key={`key-${o.id}`}
-                        className={o.id === AudioIntervalType.Shared_Interval ? "d-flex align-items-center" : "d-block"}
-                        onClick={() => handleIntervalTypeChange(o.id)}
-                      >
-                        <Label htmlFor={o.id.toString()} check className="w-100 flex-grow-1 mb-2">
-                          <Input
-                            id={o.id.toString()}
-                            name="intervalType"
-                            type="radio"
-                            value={o.id}
-                            checked={intervalType === o.id}
-                            onChange={() => {}}
-                          />
-                          {' '}
-                          {o.description}
-                        </Label>
-                        {
-                          (o.id == AudioIntervalType.Shared_Interval && intervalType == AudioIntervalType.Shared_Interval) &&
-                          <InputGroup className="w-50">
-                            <Input type="number" min={0} placeholder="0" value={mergeAudioFilesRequest.sharedInterval} onChange={handleSharedIntervalSilenceChange} />
-                            <InputGroupText>
-                              s
-                            </InputGroupText>
-                          </InputGroup>
-                        }
-
-                        {
-                          (o.id == AudioIntervalType.Individual_Interval && intervalType == AudioIntervalType.Individual_Interval) &&
-                          audioFiles.map((au, index) => (
-                            <DropdownItem text className="d-flex align-items-center px-0" key={`individu-inter-${index}`}>
-                              <p 
-                                className="w-75 flex-grow-1 mb-0 text-nowrap" 
-                                style={{
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis'
-                                }}>{index + 1}. {au.name}</p>
-                              <InputGroup className="w-50">
-                                <Input type="number" min={0} placeholder="0" value={mergeAudioFilesRequest.individualIntervals[au.name]} onChange={(e) => handleIndividualIntervalsSilenceChange(e,au.name)} />
-                                <InputGroupText>
-                                  s
-                                </InputGroupText>
-                              </InputGroup>
-                            </DropdownItem>
-                          ))
-                          
-                        }
-                        
-                      </FormGroup>
-                    )
-                  }
-                </FormGroup>
-                <br />
-              </DropdownItem>
-              <DropdownItem text>
-                Save as:
-                <Input
-                  className="mt-2"
-                  placeholder="Filename..."
-                  value={mergeAudioFilesRequest.outputFileName}
-                  onChange={handleSaveAsChange}
-                />
-              </DropdownItem>
-            </DropdownMenu>
-          </Dropdown> */}
 
           <SettingsDropdown
             toggleButtonText="Settings"
@@ -307,17 +219,17 @@ export default function Merger() {
 
                         {
                           (o.id === AudioIntervalType.Individual_Interval && intervalType === AudioIntervalType.Individual_Interval) &&
-                          audioFiles.map((au, index) => (
+                          audioMetadatas.map((au, index) => (
                             <SettingItem
                               key={`individu-inter-${index}`}
-                              name={`${index + 1}. ${au.name}`}
+                              name={`${index + 1}. ${au.fileName}`}
                               type="number"
                               min={0}
                               max={null}
                               unit="s"
                               placeholder={0}
-                              value={mergeAudioFilesRequest.individualIntervals[au.name]}
-                              onValueChange={(e) => handleIndividualIntervalsSilenceChange(e,au.name)}
+                              value={mergeAudioFilesRequest.individualIntervals[au.fileName]}
+                              onValueChange={(e) => handleIndividualIntervalsSilenceChange(e,au.fileName)}
                               display="flex"
                               truncateName
                               itemPaddingX="px-0"
