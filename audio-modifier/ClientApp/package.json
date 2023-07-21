@@ -28,6 +28,7 @@
     "rimraf": "^3.0.2",
     "spa-proxy": "^1.0.8",
     "uuid": "^9.0.0",
+    "wavesurfer.js": "^7.0.3",
     "web-vitals": "^2.1.4",
     "workbox-background-sync": "^6.5.4",
     "workbox-broadcast-update": "^6.5.4",
