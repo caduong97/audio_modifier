@@ -2,7 +2,7 @@ import { ChangeEvent, useEffect, useState } from "react";
 import UploadForm from "../components/uploads/UploadForm";
 import UploadedList from "../components/uploads/UploadedList";
 import { Button, DropdownItem, FormGroup, Input, InputGroup, InputGroupText, Label } from "reactstrap";
-import { audioMetadatasCleared, mergeAudios } from "../store/mergeSlice";
+import { audioMetadatasCleared, mergeAudios, preprocessAudios } from "../store/mergeSlice";
 import { AppDispatch, RootState } from "../store";
 import { useDispatch, useSelector } from "react-redux";
 import MergeAudioFilesRequest from "../models/merge/MergeAudioFilesRequest";
@@ -29,6 +29,10 @@ export default function Merger() {
     sharedInterval: 0,
     individualIntervals: {},
   })
+
+  const dispatchPreprocessAudioFiles = (formData: FormData) => {
+    dispatch(preprocessAudios(formData))
+  }
 
 
   const handleClearQueue = () => {
@@ -136,7 +140,12 @@ export default function Merger() {
     <div>
       <h1>Merger</h1>
 
-      <UploadForm audioFiles={audioFiles} setAudioFiles={setAudioFiles}/>
+      <UploadForm 
+        multiple
+        audioFiles={audioFiles} 
+        setAudioFiles={setAudioFiles} 
+        submit={dispatchPreprocessAudioFiles}
+      />
 
       {
         audioMetadatas.length > 0 &&

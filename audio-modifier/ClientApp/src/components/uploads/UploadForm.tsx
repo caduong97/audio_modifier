@@ -5,16 +5,19 @@ import { AppDispatch, RootState } from "../../store";
 import { useDispatch, useSelector } from "react-redux";
 
 interface UploadFormProps {
+  multiple: boolean,
   audioFiles: File[],
-  setAudioFiles: React.Dispatch<React.SetStateAction<File[]>>
+  setAudioFiles: React.Dispatch<React.SetStateAction<File[]>>,
+  submit: (formData: FormData) => void;
 }
 
 export default function UploadForm({
+  multiple,
   audioFiles,
-  setAudioFiles
+  setAudioFiles,
+  submit
 }: UploadFormProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const dispatch: AppDispatch = useDispatch()
   const preprocessStatus = useSelector((state: RootState) => state.merge.preprocessStatus)
   const [uploadFilesAborted, setUploadFilesAbort] = useState<boolean>(false)
 
@@ -64,9 +67,8 @@ export default function UploadForm({
 
     // console.log("There is some files to upload")
     setAudioFiles([...audioFiles, ...formData.getAll("files") as File[]])
-    dispatch(preprocessAudios(formData))
+    submit(formData)
   
-    
   };
 
   useEffect(() => {
@@ -93,7 +95,7 @@ export default function UploadForm({
           type="file"
           name="Audio files"
           placeholder="Upload audio files"
-          multiple
+          multiple={multiple}
           accept="audio/*" 
           innerRef={fileInputRef}
           onChange={handleFilesChange}
