@@ -1,9 +1,11 @@
 import { configureStore } from '@reduxjs/toolkit'
 import mergeReducer from './mergeSlice'
+import trimReducer from './trimSlice'
 
 const store = configureStore({
   reducer: {
-    merge: mergeReducer
+    merge: mergeReducer,
+    trim: trimReducer
   }
 })
 
