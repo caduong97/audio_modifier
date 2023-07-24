@@ -5,20 +5,23 @@ import { timeSpanStringFormatted } from "../../helpers/DateHelper";
 import { useDrag, useDrop } from "react-dnd";
 import { useRef } from "react";
 import { Trash } from "react-bootstrap-icons";
-import { AppDispatch } from "../../store";
-import { useDispatch } from "react-redux";
-import { audioMetadataRemoved } from "../../store/mergeSlice";
 import MoreInfo from "../MoreInfo";
 
 interface UploadedAudioProps {
   audioMetadata: AudioMetadataBase | AudioMetadataWav | AudioMetadataMp3
   index: number,
-  moveAudioPosition: any
+  moveAudioPosition: any,
+  remove: (fileName: string) => void
 }
 
 const type = "UploadedAudio"
 
-export default function UploadedAudio({ audioMetadata, index, moveAudioPosition }: UploadedAudioProps) {
+export default function UploadedAudio({ 
+  audioMetadata, 
+  index, 
+  moveAudioPosition,
+  remove
+}: UploadedAudioProps) {
   const audioRef = useRef(null);
 
   // useDrop hook is responsible for handling whether any item gets hovered or dropped on the element
@@ -64,10 +67,8 @@ export default function UploadedAudio({ audioMetadata, index, moveAudioPosition 
 
   const sampleRateFormatted = audioMetadata.sampleRate / 1000 + "kHz"
 
-  const dispatch: AppDispatch = useDispatch()
-
   const handleAudioRemove = () => {
-    dispatch(audioMetadataRemoved(audioMetadata.fileName))
+    remove(audioMetadata.fileName)
   }
 
   return (

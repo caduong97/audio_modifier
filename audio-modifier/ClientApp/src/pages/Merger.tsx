@@ -2,7 +2,7 @@ import { ChangeEvent, useEffect, useState } from "react";
 import UploadForm from "../components/uploads/UploadForm";
 import UploadedList from "../components/uploads/UploadedList";
 import { Button, DropdownItem, FormGroup, Input, InputGroup, InputGroupText, Label } from "reactstrap";
-import { audioMetadatasCleared, mergeAudios, preprocessAudios } from "../store/mergeSlice";
+import { audioMetadataRemoved, audioMetadatasCleared, audioMetadatasUpdated, mergeAudios, preprocessAudios } from "../store/mergeSlice";
 import { AppDispatch, RootState } from "../store";
 import { useDispatch, useSelector } from "react-redux";
 import MergeAudioFilesRequest from "../models/merge/MergeAudioFilesRequest";
@@ -15,12 +15,14 @@ import MoreInfo from "../components/MoreInfo";
 import { DndProvider } from "react-dnd";
 import {HTML5Backend} from "react-dnd-html5-backend";
 import {TouchBackend} from "react-dnd-touch-backend";
+import AudioMetadataBase, { AudioMetadataWav, AudioMetadataMp3 } from "../models/AudioMetadata";
 
 
 export default function Merger() {
   const [audioFiles, setAudioFiles] = useState<File[]>([])
   const [intervalType, setIntervalType] = useState<number>(0)
   const dispatch: AppDispatch = useDispatch()
+  const preprocessStatus = useSelector((state: RootState) => state.merge.preprocessStatus)
   const audioMetadatas = useSelector((state: RootState) => state.merge.audioMetadatas)
 
   const [mergeAudioFilesRequest, setMergeAudioFilesRequest] = useState<MergeAudioFilesRequest>({
@@ -39,6 +41,14 @@ export default function Merger() {
     setAudioFiles([])
     setIntervalType(0)
     dispatch(audioMetadatasCleared())
+  }
+
+  const dispatchUpdateAudioList = (audioMetadatas: (AudioMetadataBase | AudioMetadataWav | AudioMetadataMp3)[]) => {
+    dispatch(audioMetadatasUpdated(audioMetadatas))
+  }
+
+  const dispatchAudioRemove = (fileName: string) => {
+    dispatch(audioMetadataRemoved(fileName))
   }
 
   useEffect(() => {
@@ -145,6 +155,7 @@ export default function Merger() {
         audioFiles={audioFiles} 
         setAudioFiles={setAudioFiles} 
         submit={dispatchPreprocessAudioFiles}
+        submitStatus={preprocessStatus}
       />
 
       {
@@ -159,7 +170,11 @@ export default function Merger() {
         </div>
         
         <DndProvider backend={backendForDND}>
-          <UploadedList/>
+          <UploadedList
+            audioMetadatas={audioMetadatas}
+            updateList={dispatchUpdateAudioList}
+            removeListItem={dispatchAudioRemove}
+          />
         </DndProvider>
 
         <div className="d-flex flex-column flex-sm-row justify-content-end mt-3">

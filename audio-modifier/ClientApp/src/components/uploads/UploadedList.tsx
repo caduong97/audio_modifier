@@ -1,11 +1,19 @@
-import { useDispatch, useSelector } from "react-redux"
+import { useDispatch } from "react-redux"
 import UploadedAudio from "./UploadedAudio"
-import { AppDispatch, RootState } from "../../store"
-import { audioMetadatasUpdated } from "../../store/mergeSlice";
+import { AppDispatch } from "../../store"
+import AudioMetadataBase, { AudioMetadataWav, AudioMetadataMp3 } from "../../models/AudioMetadata";
 
-export default function UploadedList() {
-  const audioMetadatas = useSelector((state: RootState) => state.merge.audioMetadatas)
-  const dispatch: AppDispatch = useDispatch()
+interface UploadedListProps {
+  audioMetadatas: (AudioMetadataBase | AudioMetadataWav | AudioMetadataMp3)[]
+  updateList: (audioMetadatas: (AudioMetadataBase | AudioMetadataWav | AudioMetadataMp3)[]) => void
+  removeListItem: (fileName: string) => void
+}
+
+export default function UploadedList({
+  audioMetadatas,
+  updateList,
+  removeListItem
+}: UploadedListProps) {
 
   const moveAudioPosition = (dragIndex: number, hoverIndex: number) => {
     // Make a copy of the audiometadatas array for mutating
@@ -17,7 +25,7 @@ export default function UploadedList() {
     // console.log("moveAudioPosition")
     // console.log("updated audio metadata", updatedAudioMetadatas)
     
-    dispatch(audioMetadatasUpdated(updatedAudioMetadatas))
+    updateList(updatedAudioMetadatas)
   }
 
   return (
@@ -30,6 +38,7 @@ export default function UploadedList() {
                 audioMetadata={a} 
                 index={index}  
                 moveAudioPosition={moveAudioPosition}
+                remove={removeListItem}
               />
             )
           })
