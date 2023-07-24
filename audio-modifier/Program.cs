@@ -34,6 +34,7 @@ builder.Services.AddControllers();
 
 builder.Services.AddScoped<IAudioBasicService, AudioBasicService>();
 builder.Services.AddScoped<IMergeService, MergeService>();
+builder.Services.AddScoped<ITrimService, TrimService>();
 
 var app = builder.Build();
 
