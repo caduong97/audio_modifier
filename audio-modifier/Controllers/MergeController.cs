@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Rewrite;
 
 namespace audio_modifier.Controllers
 {
-    [Route("api/[controller]")]
     public class MergeController : BaseController
     {
         private readonly IMergeService _mergeService;
