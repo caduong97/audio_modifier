@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
 import UploadForm from "../components/uploads/UploadForm";
 import Waveform from "../components/waveform/Waveform";
 import { AppDispatch, RootState } from "../store";
@@ -11,6 +11,8 @@ import { DndProvider } from "react-dnd";
 import {HTML5Backend} from "react-dnd-html5-backend";
 import {TouchBackend} from "react-dnd-touch-backend";
 import { Button } from "reactstrap";
+import SettingItem from "../components/SettingItem";
+import SettingsDropdown from "../components/SettingsDropdown";
 
 export default function Trimmer() {
   const [audioFiles, setAudioFiles] = useState<File[]>([])
@@ -22,10 +24,13 @@ export default function Trimmer() {
     jobId: uuidv4(),
     start: 0,
     end: 0,
+    outputFileName: ""
   })
 
-
-  const url = audioFiles.length > 0 ? URL.createObjectURL(audioFiles[0]) : ""
+  const getUrl = useMemo(
+    () => { return audioFiles.length > 0 ? URL.createObjectURL(audioFiles[0]) : "" },
+    [audioFiles]
+  )
 
   const isTouchDevice = () => {
     if ("ontouchstart" in window) {
@@ -54,12 +59,25 @@ export default function Trimmer() {
     dispatch(audioMetadataRemoved(fileName))
   }
 
-  const updateTrimSettings = (start: number, end: number) => {
+  useEffect(() => {
+    if (audioMetadatas.length === 0) {
+      setTrimAudioRequest({...trimAudioRequest, start: 0, end: 0, outputFileName: ""})
+    }
+  }, [audioMetadatas])
+
+  useEffect(() => {
+    if (audioFiles.length === 0 && audioMetadatas.length > 0) {
+      dispatch(audioMetadatasCleared())
+    }
+  }, [audioFiles])
+
+  const updateTrimSettings = useCallback((start: number, end: number) => {
     setTrimAudioRequest({...trimAudioRequest, start: start, end: end})
+  }, [trimAudioRequest])
+
+  const handleSaveAsChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setTrimAudioRequest({...trimAudioRequest, outputFileName: e.target.value})
   }
-
-  
-
   
 
   return (
@@ -84,6 +102,8 @@ export default function Trimmer() {
               onClick={handleClearQueue}
             >Clear queue</Button>
           </div>
+
+          
           <DndProvider backend={backendForDND}>
             <UploadedList
               audioMetadatas={audioMetadatas}
@@ -92,11 +112,29 @@ export default function Trimmer() {
 
             />
           </DndProvider> 
+          <div className='d-flex flex-column flex-sm-row justify-content-end my-3'>
+            <SettingsDropdown
+              toggleButtonText="Output settings"
+              title="Advanced"
+              width="400px"
+            >
+              <div>
+                <SettingItem
+                  name="Save as:"
+                  type="text"
+                  placeholder="Filename..."
+                  value={trimAudioRequest.outputFileName}
+                  onValueChange={handleSaveAsChange}
+                  display="block"
+                ></SettingItem>
+              </div>
+            </SettingsDropdown>
+          </div>
 
           {
-            url !== "" &&
+            getUrl !== "" &&
             <Waveform 
-              url={url}
+              url={getUrl}
               trimMode
               updateTrimSettings={updateTrimSettings}
             ></Waveform>

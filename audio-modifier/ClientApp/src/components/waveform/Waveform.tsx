@@ -1,15 +1,18 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, ChangeEvent, memo } from 'react';
 import PropTypes from 'prop-types';
 import WaveSurfer from 'wavesurfer.js';
 import { PlayCircleFill, PauseCircleFill } from 'react-bootstrap-icons';
 import { Button } from 'reactstrap';
 import Regions, { type RegionParams } from 'wavesurfer.js/dist/plugins/regions.js'
 import Timeline from 'wavesurfer.js/dist/plugins/timeline.js'
+import SettingsDropdown from '../SettingsDropdown';
+import SettingItem from '../SettingItem';
+import TrimAudioRequest from '../../models/trim/TrimAudioRequest';
 
 
 interface WaveformProps {
   url: string,
-  trimMode?: boolean
+  trimMode?: boolean,
   updateTrimSettings?: (start: number, end: number) => void,
 }
 
@@ -27,11 +30,12 @@ const Waveform = ({
 
   // Region states
   const [{regionStart, regionEnd}, setRegionPositions] = useState<any>({regionStart: 0, regionEnd: 0})
+  // Trim region ref, keeping track of the region props 
+  const trimRegion = useRef<any>(null)
+  const wsRegions = useRef<Regions | null>(null)
 
-  let waveSurfer: WaveSurfer;
-  let wsRegions: Regions
   useEffect(() => {
-    waveSurfer = WaveSurfer.create({
+    const waveSurfer = WaveSurfer.create({
       container: waveFormContainerRef.current as any,
       barWidth: 2,
       minPxPerSec: 0,
@@ -42,7 +46,7 @@ const Waveform = ({
     // Initialize the Timeline plugin
     waveSurfer.registerPlugin(Timeline.create())
     // Initialize the Region plugin
-    wsRegions = waveSurfer.registerPlugin(Regions.create())
+    wsRegions.current = waveSurfer.registerPlugin(Regions.create())
     
 
     waveSurfer.load(url);
@@ -50,8 +54,6 @@ const Waveform = ({
       waveSurferRef.current = waveSurfer;
     });
     waveSurfer.on('seeking', (currentTime) => {
-      // console.log("seeking", currentTime)
-      // console.log(waveSurferRef.current.options)
     });
     waveSurfer.on('play', () => {
       setIsPlaying(true)
@@ -66,7 +68,6 @@ const Waveform = ({
     });
     waveSurfer.on('click', (relativeX) => {
     });
-    
     waveSurfer.on('interaction', () => {
       if (activeRegion.current !== null) {
         activeRegion.current.setOptions({ color: "rgba(110, 7, 194, 0.2)" })
@@ -74,59 +75,62 @@ const Waveform = ({
       }
       
     })
+    waveSurfer.on('decode', (duration) => {
+      if (trimMode) {
+        initTrimRegion(duration)
+      }
+    });
 
-   
+    console.log(waveSurfer)
     
     return () => {
       setIsPlaying(false) 
-      waveSurfer.destroy();
+      if (waveSurfer) {
+        waveSurfer.destroy();
+      }
     };
   }, [url, trimMode, regionStart, regionEnd]);
 
-  useEffect(() => {
-    if (trimMode) {
-      waveSurfer.on('decode', (duration) => {
-        initTrimRegion(duration)
-      });
-    }
-  }, [trimMode, regionStart, regionEnd])
 
   const initTrimRegion = (fullAudioDuration: number) => {
-    const defaultRegionStart = regionStart !== 0
-      ? regionStart
-      : 0
-    const defaultRegionEnd = regionEnd !== 0
-      ? regionEnd
-      : Math.floor(fullAudioDuration / 4)
-    wsRegions.addRegion({
-      id: "trim-region",
-      start: defaultRegionStart,
-      end: defaultRegionEnd,
-      content: 'Resize or drag me',
-      color: "rgba(110, 7, 194, 0.2)",
-      drag: true,
-      resize: true,
-    })    
-    
-    // wsRegions.enableDragSelection({
-    //   color: 'rgba(255, 0, 0, 0.1)',
-    // })
-    wsRegions.on("region-created", (region) => {
-    })
-    wsRegions.on('region-updated', (region) => {      
-    })
-    wsRegions.on('region-clicked', (region, e) => {
-      e.stopPropagation() 
-      activeRegion.current = region
-      activeRegion.current.play()
-      activeRegion.current.setOptions({ color: "rgba(110, 7, 194, 0.5)" })
-      setIsPlaying(true)
-    })
-    wsRegions.on('region-out', (region) => {
-      if (activeRegion.current === region) {
-        region.play()
-      }
-    })
+    if (wsRegions.current) {
+      const defaultRegionStart = regionStart !== 0
+        ? regionStart
+        : 0
+      const defaultRegionEnd = regionEnd !== 0
+        ? regionEnd
+        : 4
+      wsRegions.current.addRegion({
+        id: "trim-region",
+        start: defaultRegionStart,
+        end: defaultRegionEnd,
+        content: 'Resize or drag me',
+        color: "rgba(110, 7, 194, 0.2)",
+        drag: true,
+        resize: true,
+      })  
+      // wsRegions.enableDragSelection({
+      //   color: 'rgba(255, 0, 0, 0.1)',
+      // })
+      wsRegions.current.on("region-created", (region) => {
+        setRegionPositions({start: defaultRegionStart, end: defaultRegionEnd})
+      })
+      wsRegions.current.on('region-updated', (region) => {     
+        trimRegion.current = region 
+      })
+      wsRegions.current.on('region-clicked', (region, e) => {
+        e.stopPropagation() 
+        activeRegion.current = region
+        activeRegion.current.play()
+        activeRegion.current.setOptions({ color: "rgba(110, 7, 194, 0.5)" })
+        setIsPlaying(true)
+      })
+      wsRegions.current.on('region-out', (region) => {
+        if (activeRegion.current === region) {
+          region.play()
+        }
+      })
+    }
   }
 
   const handlePlayPause = () => {
@@ -144,17 +148,14 @@ const Waveform = ({
   }
 
   const handleTrim = () => {
-    // console.log("Handle trim")
-    // console.log(waveSurfer)
-    const regions = wsRegions.getRegions()
-    const region = regions.find(r => r.id === "trim-region")
-    const { start, end } = region ?? {start:0, end:0}
-    // console.log(start, end)
+    console.log("Handle trim")
+    const { start, end } = trimRegion.current ?? {start:0, end:0}
+    console.log("start", start, "end", end)
 
     setRegionPositions({regionStart: start, regionEnd: end})
     if (!updateTrimSettings) return
     updateTrimSettings(start, end)
-  }  
+  } 
 
   return (
     <div 
@@ -184,23 +185,25 @@ const Waveform = ({
         <Button onClick={handleZoomOut}>zoom out</Button>
       </div>
 
-      <div className='d-flex justify-content-end mt-4'>
         {
           trimMode &&
-          <Button
-            color='primary'
-            onClick={handleTrim}
-          >Trim</Button>
+          <div className='d-flex flex-column flex-sm-row justify-content-end mt-3'>
+            <Button
+              color='primary'
+              className='ms-sm-3'
+              onClick={handleTrim}
+            >Trim</Button>
+          </div>
+         
         }
         
-      </div>
       
     </div>
   );
 };
 
-Waveform.propTypes = {
-  url: PropTypes.string.isRequired,
-};
+// Waveform.propTypes = {
+//   url: PropTypes.string.isRequired,
+// };
 
-export default Waveform;
+export default React.memo(Waveform);
