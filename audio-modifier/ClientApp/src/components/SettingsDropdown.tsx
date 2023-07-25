@@ -24,7 +24,7 @@ export default function SettingsDropdown({
     <Dropdown 
       isOpen={dropdownOpen} toggle={toggle}
       direction={direction} 
-      className="w-100 me-sm-3"
+      className="w-100"
       style={{
         minWidth: width
       }}  
@@ -33,7 +33,7 @@ export default function SettingsDropdown({
         {toggleButtonText}
       </DropdownToggle>
       <DropdownMenu 
-        end className="w-100"
+        end className="w-100 pb-4"
         style={{
           maxWidth: width
         }}  

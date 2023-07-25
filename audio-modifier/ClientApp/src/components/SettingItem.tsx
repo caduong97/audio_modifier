@@ -37,6 +37,10 @@ export default function SettingItem({
       itemStyle = itemStyle.concat(` ${itemPaddingY}`)
     }
 
+  let nameStyle = display === 'flex'
+    ? 'w-100 mb-0 flex-grow-1'
+    : 'w-100'
+
   //   return style
   // }
 
@@ -46,7 +50,7 @@ export default function SettingItem({
       className={itemStyle}
     >
       <p 
-        className={"w-100 mb-0 flex-grow-1"}
+        className={nameStyle}
         style={truncateName ? {
           whiteSpace: 'nowrap',
           overflow: 'hidden',
