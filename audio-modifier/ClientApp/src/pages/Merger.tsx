@@ -162,12 +162,12 @@ export default function Merger() {
         audioMetadatas.length > 0 &&
         <>
           <div className="mt-5 mb-2 w-100 d-flex justify-content-between align-items-center">
-          <h5 className="d-inline">File queue</h5>
-          <Button 
-            size="sm" 
-            onClick={handleClearQueue}
-          >Clear queue</Button>
-        </div>
+            <h5 className="mb-0">File queue</h5>
+            <Button 
+              size="sm" 
+              onClick={handleClearQueue}
+            >Clear queue</Button>
+          </div>
         
         <DndProvider backend={backendForDND}>
           <UploadedList
@@ -283,7 +283,7 @@ export default function Merger() {
 
           <Button 
             color="primary" 
-            className=""
+            className="ms-sm-3"
             onClick={handleMerge}
           >Merge</Button>
         </div>

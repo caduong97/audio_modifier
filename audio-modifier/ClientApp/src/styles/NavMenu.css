@@ -30,13 +30,14 @@ html {
 @media (min-width: 576px) {
   header {
     height: 100vh;
-    max-width: 200px;
+    position: fixed;
+    width: 200px;
   }
 }
 
 @media (min-width: 768px) {
   header {
-    max-width: 300px;
+    width: 300px;
   }
 }
 
