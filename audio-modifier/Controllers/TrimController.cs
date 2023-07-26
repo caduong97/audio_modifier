@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using audio_modifier.DTOs;
+using audio_modifier.Helpers;
 using audio_modifier.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -34,6 +36,21 @@ namespace audio_modifier.Controllers
         {
             var audioDto = _audioBasicService.ProprocessMp3AudioFiles(file);
             return Ok(audioDto);
+        }
+
+        [HttpPost]
+        [RequestSizeLimit(536870912)]
+        public async Task Index([FromForm] List<IFormFile> files, [FromQuery] TrimAudioRequestDto requestDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                throw new Exception("Trim request model is not valid");
+            }
+
+            var result = _trimService.TrimAudio(files.First(), requestDto);
+
+            await ResponseFileHelper.WriteFileToResponseBody(Response, result);
+
         }
     }
 }
