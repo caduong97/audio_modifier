@@ -3,7 +3,7 @@ import UploadForm from "../components/uploads/UploadForm";
 import Waveform from "../components/waveform/Waveform";
 import { AppDispatch, RootState } from "../store";
 import { useDispatch, useSelector } from "react-redux";
-import { audioMetadataRemoved, audioMetadatasCleared, audioMetadatasUpdated, preprocessAudio } from "../store/trimSlice";
+import { audioMetadataRemoved, audioMetadatasCleared, audioMetadatasUpdated, preprocessAudio, trimAudio } from "../store/trimSlice";
 import TrimAudioRequest from "../models/trim/TrimAudioRequest";
 import { v4 as uuidv4 } from 'uuid';
 import UploadedList from "../components/uploads/UploadedList";
@@ -22,8 +22,10 @@ export default function Trimmer() {
 
   const [trimAudioRequest, setTrimAudioRequest] = useState<TrimAudioRequest>({
     jobId: uuidv4(),
+    leadingSilence: 0,
     start: 0,
     end: 0,
+    trailingSilence: 0,
     outputFileName: ""
   })
 
@@ -61,7 +63,14 @@ export default function Trimmer() {
 
   useEffect(() => {
     if (audioMetadatas.length === 0) {
-      setTrimAudioRequest({...trimAudioRequest, start: 0, end: 0, outputFileName: ""})
+      setTrimAudioRequest({
+        ...trimAudioRequest, 
+        leadingSilence: 0,
+        start: 0, 
+        end: 0, 
+        trailingSilence: 0,
+        outputFileName: ""
+      })
     }
   }, [audioMetadatas])
 
@@ -72,11 +81,28 @@ export default function Trimmer() {
   }, [audioFiles])
 
   const updateTrimSettings = useCallback((start: number, end: number) => {
-    setTrimAudioRequest({...trimAudioRequest, start: start, end: end})
+    
+    const trimRequest = {...trimAudioRequest, start: start, end: end}
+    setTrimAudioRequest(trimRequest)
+
+    const formData = new FormData()
+    formData.append('files', audioFiles[0])
+
+    console.log(formData.getAll("files"), trimRequest)
+    dispatch(trimAudio({ form: formData, params: trimRequest}))
+
   }, [trimAudioRequest])
 
   const handleSaveAsChange = (e: ChangeEvent<HTMLInputElement>) => {
     setTrimAudioRequest({...trimAudioRequest, outputFileName: e.target.value})
+  }
+
+  const handleLeadingSilenceChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setTrimAudioRequest({...trimAudioRequest, leadingSilence: parseFloat(e.target.value)})
+  }
+
+  const handleTrailingSilenceChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setTrimAudioRequest({...trimAudioRequest, trailingSilence: parseFloat(e.target.value)})
   }
   
 
@@ -119,6 +145,28 @@ export default function Trimmer() {
               width="400px"
             >
               <div>
+                <SettingItem
+                  name="Leading silence:"
+                  type="number"
+                  min={0}
+                  max={null}
+                  unit="s"
+                  placeholder={0}
+                  value={trimAudioRequest.leadingSilence}
+                  onValueChange={handleLeadingSilenceChange}
+                  display="flex"
+                ></SettingItem>
+                <SettingItem
+                  name="Trailing silence:"
+                  type="number"
+                  min={0}
+                  max={null}
+                  unit="s"
+                  placeholder={0}
+                  value={trimAudioRequest.trailingSilence}
+                  onValueChange={handleTrailingSilenceChange}
+                  display="flex"
+                ></SettingItem>
                 <SettingItem
                   name="Save as:"
                   type="text"
