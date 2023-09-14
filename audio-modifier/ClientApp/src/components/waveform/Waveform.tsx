@@ -13,13 +13,13 @@ import TrimAudioRequest from '../../models/trim/TrimAudioRequest';
 interface WaveformProps {
   url: string,
   trimMode?: boolean,
-  updateTrimSettings?: (start: number, end: number) => void,
+  trim?: (start: number, end: number) => void,
 }
 
 const Waveform = ({ 
   url,
   trimMode = false,
-  updateTrimSettings,
+  trim,
 }: WaveformProps) => {
   const waveFormContainerRef = useRef(null);
   const waveSurferRef = useRef({
@@ -153,8 +153,8 @@ const Waveform = ({
     console.log("start", start, "end", end)
 
     setRegionPositions({regionStart: start, regionEnd: end})
-    if (!updateTrimSettings) return
-    updateTrimSettings(start, end)
+    if (!trim) return
+    trim(start, end)
   } 
 
   return (

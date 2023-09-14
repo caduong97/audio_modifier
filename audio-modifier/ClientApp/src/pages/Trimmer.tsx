@@ -80,7 +80,7 @@ export default function Trimmer() {
     }
   }, [audioFiles])
 
-  const updateTrimSettings = useCallback((start: number, end: number) => {
+  const trim = useCallback((start: number, end: number) => {
     
     const trimRequest = {...trimAudioRequest, start: start, end: end}
     setTrimAudioRequest(trimRequest)
@@ -184,7 +184,7 @@ export default function Trimmer() {
             <Waveform 
               url={getUrl}
               trimMode
-              updateTrimSettings={updateTrimSettings}
+              trim={trim}
             ></Waveform>
           }       
         </>
