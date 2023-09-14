@@ -88,10 +88,10 @@ export default function Trimmer() {
     const formData = new FormData()
     formData.append('files', audioFiles[0])
 
-    console.log(formData.getAll("files"), trimRequest)
+    console.log("all files", formData.getAll("files"))
     dispatch(trimAudio({ form: formData, params: trimRequest}))
 
-  }, [trimAudioRequest])
+  }, [trimAudioRequest, audioFiles])
 
   const handleSaveAsChange = (e: ChangeEvent<HTMLInputElement>) => {
     setTrimAudioRequest({...trimAudioRequest, outputFileName: e.target.value})
