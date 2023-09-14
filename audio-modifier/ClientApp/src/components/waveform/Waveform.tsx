@@ -100,7 +100,7 @@ const Waveform = ({
       const defaultRegionEnd = regionEnd !== 0
         ? regionEnd
         : 4
-      wsRegions.current.addRegion({
+      trimRegion.current = wsRegions.current.addRegion({
         id: "trim-region",
         start: defaultRegionStart,
         end: defaultRegionEnd,
