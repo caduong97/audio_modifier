@@ -17,28 +17,10 @@ namespace audio_modifier.Controllers
     public class MergeController : BaseController
     {
         private readonly IMergeService _mergeService;
-        private readonly IAudioBasicService _audioBasicService;
 
-        public MergeController(ILogger<BaseController> logger, IConfiguration configuration, IMergeService mergeService, IAudioBasicService audioBasicService) : base(logger, configuration)
+        public MergeController(ILogger<BaseController> logger, IConfiguration configuration, IMergeService mergeService) : base(logger, configuration)
         {
             _mergeService = mergeService;
-            _audioBasicService = audioBasicService;
-        }
-
-        [HttpPost("preprocessWavFiles")]
-        [RequestSizeLimit(536870912)]
-        public IActionResult PreprocessWavFiles ([FromForm] List<IFormFile> files)
-        {
-            var audioDtos = files.Select(file => _audioBasicService.ProprocessWavAudioFiles(file));
-            return Ok(audioDtos);
-        }
-
-        [HttpPost("preprocessMp3Files")]
-        [RequestSizeLimit(536870912)]
-        public IActionResult PreprocessMp3Files([FromForm] List<IFormFile> files)
-        {
-            var audioDtos = files.Select(file => _audioBasicService.ProprocessMp3AudioFiles(file));
-            return Ok(audioDtos);
         }
 
 
