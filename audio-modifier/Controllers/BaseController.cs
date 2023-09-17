@@ -29,7 +29,7 @@ namespace audio_modifier.Controllers
         [RequestSizeLimit(536870912)]
         public virtual IActionResult PreprocessWavFiles([FromForm] List<IFormFile> files)
         {
-            var audioDtos = files.Select(file => _audioBasicService.ProprocessWavAudioFiles(file));
+            var audioDtos = files.Select(file => _audioBasicService.ProprocessWavAudioFile(file));
             return Ok(audioDtos);
         }
 
@@ -37,7 +37,7 @@ namespace audio_modifier.Controllers
         [RequestSizeLimit(536870912)]
         public virtual IActionResult PreprocessWavFile([FromForm] IFormFile file)
         {
-            var audioDto = _audioBasicService.ProprocessWavAudioFiles(file);
+            var audioDto = _audioBasicService.ProprocessWavAudioFile(file);
             return Ok(audioDto);
         }
 
@@ -45,7 +45,7 @@ namespace audio_modifier.Controllers
         [RequestSizeLimit(536870912)]
         public virtual IActionResult PreprocessMp3Files([FromForm] List<IFormFile> files)
         {
-            var audioDtos = files.Select(file => _audioBasicService.ProprocessMp3AudioFiles(file));
+            var audioDtos = files.Select(file => _audioBasicService.ProprocessMp3AudioFile(file));
             return Ok(audioDtos);
         }
 
@@ -53,7 +53,7 @@ namespace audio_modifier.Controllers
         [RequestSizeLimit(536870912)]
         public virtual IActionResult PreprocessMp3Files([FromForm] IFormFile file)
         {
-            var audioDto = _audioBasicService.ProprocessMp3AudioFiles(file);
+            var audioDto = _audioBasicService.ProprocessMp3AudioFile(file);
             return Ok(audioDto);
         }
 
