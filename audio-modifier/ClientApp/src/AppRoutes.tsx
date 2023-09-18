@@ -6,6 +6,7 @@ import Merger from "./pages/Merger"
 import Converter from "./pages/Converter"
 import Trimmer from "./pages/Trimmer"
 import Mixer from "./pages/Mixer"
+import SteoreoToMono from "./pages/SteoreoToMono"
 
 
 export const routeConfig: RouteObject[] = [
@@ -37,6 +38,11 @@ export const routeConfig: RouteObject[] = [
         path: "/mixer",
         id: "Mixer",
         element: <Mixer />
+      },
+      {
+        path: "/stereo-to-mono",
+        id: "Stereo To Mono",
+        element: <SteoreoToMono />
       },
     ]
   },
