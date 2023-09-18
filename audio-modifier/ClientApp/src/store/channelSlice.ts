@@ -3,6 +3,7 @@ import { ApiRequestStatus } from ".";
 import AudioMetadataBase, { AudioMetadataMp3, AudioMetadataWav } from "../models/AudioMetadata";
 import { create } from "domain";
 import ApiHelper from "../helpers/ApiHelper";
+import StereoToMonoRequest from "../models/channel/StereoToMonoRequest";
 
 interface ChannelSliceState {
   preprocessStatus: ApiRequestStatus,
@@ -55,6 +56,33 @@ export const preprocessAudio = createAsyncThunk<(AudioMetadataBase | AudioMetada
     } else {
       throw new Error("Cannot perform batch preprocessing. Audio format not supported.")
     }
+  }
+)
+
+interface StereoToMonoRequestPayload {
+  form: FormData,
+  params: StereoToMonoRequest
+}
+
+export const stereoToMono = createAsyncThunk<any, StereoToMonoRequestPayload>(
+  'channel/stereoToMono', 
+  async ({form, params}) => {
+    const response = await ApiHelper.postForDownload('/channel/stereoToMono', form, params )
+    const downloadUrl = URL.createObjectURL(response.data as any);
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    const contentDisposition = response.headers['content-disposition'];
+    let fileName
+    if (contentDisposition) {
+      const fileNameMatch = contentDisposition.match(/filename="(.+)"/);
+      // console.log('fileNameMatch', fileNameMatch);
+      if (fileNameMatch.length === 2) {
+        fileName = fileNameMatch[1];
+      }
+    }
+    link.download = fileName; // Set the desired file name
+    link.click();
+    // return response.data as Blob
   }
 )
 
