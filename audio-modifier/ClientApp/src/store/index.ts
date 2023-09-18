@@ -1,11 +1,13 @@
 import { configureStore } from '@reduxjs/toolkit'
 import mergeReducer from './mergeSlice'
 import trimReducer from './trimSlice'
+import channelReducer from './channelSlice'
 
 const store = configureStore({
   reducer: {
     merge: mergeReducer,
-    trim: trimReducer
+    trim: trimReducer,
+    channel: channelReducer
   }
 })
 
