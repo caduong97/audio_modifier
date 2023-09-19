@@ -152,6 +152,7 @@ export default function Merger() {
 
       <UploadForm 
         multiple
+        sameExtensionRequired
         audioFiles={audioFiles} 
         setAudioFiles={setAudioFiles} 
         submit={dispatchPreprocessAudioFiles}

@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 interface UploadFormProps {
   multiple: boolean,
+  sameExtensionRequired?: boolean,
   audioFiles: File[],
   setAudioFiles: React.Dispatch<React.SetStateAction<File[]>>,
   submit: (formData: FormData) => void
@@ -17,7 +18,8 @@ export default function UploadForm({
   audioFiles,
   setAudioFiles,
   submit,
-  submitStatus
+  submitStatus,
+  sameExtensionRequired = false
 }: UploadFormProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [uploadFilesAborted, setUploadFilesAbort] = useState<boolean>(false)
@@ -40,22 +42,27 @@ export default function UploadForm({
         for (let i = 0; i < fileList.length; i++) {
           // One of the uploaded files has the same name with one of the in-queue files
           // abort that file, continue uploading other files
-          if (audioFiles.some(f => f.name === fileList[i].name)) {
-            console.warn("Duplicated files detected. Make sure uploaded files have unique name. Duplicated file name:", fileList[i].name)
-            continue
+          // if (audioFiles.some(f => f.name === fileList[i].name)) {
+          //   console.warn("Duplicated files detected. Make sure uploaded files have unique name. Duplicated file name:", fileList[i].name)
+          //   continue
+          // }
+          
+          if (sameExtensionRequired) {
+            // One of the uploaded files has a different extension than the in-queue files
+            // abort that file, continue upload other files with the same extension
+            if (audioFiles.length > 0 && audioFiles[0].type !== fileList[i].type) {
+              console.warn("Multiple file extensions detected. Please convert all files to the same extension first. \r\n Uploading of some file was aborted. File name: ", fileList[i].name)
+              continue
+            }
+
+            // No in-queue files yet, & uploaded files have differnt extensions
+            // abort all of them
+            if (audioFiles.length === 0 && fileList[i].type !== fileList[0].type) {
+              setUploadFilesAbort(true)
+              throw Error("Multiple file extensions detected. Please convert all files to the same extension first.") 
+            }
           }
-          // One of the uploaded files has a different extension than the in-queue files
-          // abort that file, continue upload other files with the same extension
-          if (audioFiles.length > 0 && audioFiles[0].type !== fileList[i].type) {
-            console.warn("Multiple file extensions detected. Please convert all files to the same extension first. \r\n Uploading of some file was aborted. File name: ", fileList[i].name)
-            continue
-          }
-          // No in-queue files yet, & uploaded files have differnt extensions
-          // abort all of them
-          if (audioFiles.length === 0 && fileList[i].type !== fileList[0].type) {
-            setUploadFilesAbort(true)
-            throw Error("Multiple file extensions detected. Please convert all files to the same extension first.") 
-          }
+          
           formData.append('files', fileList[i]);
         } 
   

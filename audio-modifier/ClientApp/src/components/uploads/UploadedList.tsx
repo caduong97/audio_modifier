@@ -36,7 +36,7 @@ export default function UploadedList({
           audioMetadatas.map((a, index) => {
             return (
               <UploadedAudio
-                key={a.fileName}
+                key={`${index}-${a.fileName}`}
                 audioMetadata={a} 
                 index={index}  
                 moveAudioPosition={moveAudioPosition}
