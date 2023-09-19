@@ -55,13 +55,12 @@ export const mergeSlice = createSlice({
     
 })
 
+// TODO: wait for a while to see if all the preprocessAudio thunk in all the slices can be merged into one
+// see #1_190923
 export const preprocessAudios = createAsyncThunk<(AudioMetadataBase | AudioMetadataWav | AudioMetadataMp3)[], FormData>(
   'merge/preprocessAudiosForMerging', 
   async (form) => {
     const formFiles = form.getAll("files") as File[]
-    if (formFiles.some(f => f.type !== formFiles[0].type)) {
-      throw new Error("Cannot perform audio batch preprocessing. Inconsistent file extensions detected.")
-    }
     if (formFiles[0].type === "audio/wav") {
       const response = await ApiHelper.postWithFiles('/merge/preprocessWavFiles', form)
       return response.data as AudioMetadataWav[]

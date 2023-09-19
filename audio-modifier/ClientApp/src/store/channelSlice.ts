@@ -43,6 +43,8 @@ export const channelSlice = createSlice({
   }
 })
 
+// TODO: wait for a while to see if all the preprocessAudio thunk in all the slices can be merged into one
+// see #1_190923
 export const preprocessAudio = createAsyncThunk<(AudioMetadataBase | AudioMetadataWav | AudioMetadataMp3), FormData>(
   'channel/preprocessAudio',
   async (form) => {

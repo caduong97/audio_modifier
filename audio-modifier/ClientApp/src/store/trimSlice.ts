@@ -43,13 +43,12 @@ export const trimSlice = createSlice({
   }
 })
 
+// TODO: wait for a while to see if all the preprocessAudio thunk in all the slices can be merged into one
+// see #1_190923
 export const preprocessAudio = createAsyncThunk<(AudioMetadataBase | AudioMetadataWav | AudioMetadataMp3), FormData>(
   'trim/preprocessAudio', 
   async (form) => {
     const formFiles = form.getAll("file") as File[]
-    if (formFiles.length === 0) {
-      throw new Error("Cannot perform audio preprocessing. No audio file to process")
-    }
     if (formFiles[0].type === "audio/wav") {
       const response = await ApiHelper.postWithFiles('/trim/preprocessWavFile', form)
       return response.data as AudioMetadataWav
