@@ -20,7 +20,6 @@ export default function UploadForm({
   submitStatus
 }: UploadFormProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const preprocessStatus = useSelector((state: RootState) => state.merge.preprocessStatus)
   const [uploadFilesAborted, setUploadFilesAbort] = useState<boolean>(false)
 
   const handleFilesChange = (e: ChangeEvent<HTMLInputElement>) => {
