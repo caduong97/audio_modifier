@@ -34,6 +34,9 @@ export default function SteoreoToMono() {
   const backendForDND = isTouchDevice() ? TouchBackend : HTML5Backend;
 
   const dispatchPreprocessAudioFiles = (formData: FormData) => {
+    if (audioMetadatas.length > 0) {
+      dispatch(audioMetadatasCleared())
+    }
     dispatch(preprocessAudio(formData))
   }
 

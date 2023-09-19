@@ -44,7 +44,9 @@ export default function Trimmer() {
   const backendForDND = isTouchDevice() ? TouchBackend : HTML5Backend;
 
   const dispatchPreprocessAudioFiles = (formData: FormData) => {
-    // TODO: dispatch preprocess audios action in trimSlice
+    if (audioMetadatas.length > 0) {
+      dispatch(audioMetadatasCleared())
+    }
     dispatch(preprocessAudio(formData))
   }
 
@@ -119,7 +121,7 @@ export default function Trimmer() {
       />
 
       {
-        audioMetadatas.length === 1 &&
+        audioMetadatas.length > 0 &&
         <>
           <div className="mt-5 mb-2 w-100 d-flex justify-content-between align-items-center">
             <h5 className="mb-0">File queue</h5>
