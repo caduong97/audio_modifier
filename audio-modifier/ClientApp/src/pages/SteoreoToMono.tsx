@@ -34,6 +34,8 @@ export default function SteoreoToMono() {
   const backendForDND = isTouchDevice() ? TouchBackend : HTML5Backend;
 
   const dispatchPreprocessAudioFiles = (formData: FormData) => {
+    // TODO: make it so that multiple files can be added to the queue, but only the selected one will be processed, see all marked with #190923
+    // Once that's done, the following 3 lines can be removed
     if (audioMetadatas.length > 0) {
       dispatch(audioMetadatasCleared())
     }
