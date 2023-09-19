@@ -1,7 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { ApiRequestStatus } from ".";
 import AudioMetadataBase, { AudioMetadataMp3, AudioMetadataWav } from "../models/AudioMetadata";
-import { create } from "domain";
 import ApiHelper from "../helpers/ApiHelper";
 import StereoToMonoRequest from "../models/channel/StereoToMonoRequest";
 
@@ -10,7 +9,7 @@ interface ChannelSliceState {
   audioMetadatas: (AudioMetadataBase | AudioMetadataWav | AudioMetadataMp3)[],
 }
 
-export const channelSlice = createSlice({
+export const stereoToMonoSlice = createSlice({
   name: "trim",
   initialState: {
     preprocessStatus: 'idle',
@@ -46,7 +45,7 @@ export const channelSlice = createSlice({
 // TODO: wait for a while to see if all the preprocessAudio thunk in all the slices can be merged into one
 // see #1_190923
 export const preprocessAudio = createAsyncThunk<(AudioMetadataBase | AudioMetadataWav | AudioMetadataMp3), FormData>(
-  'channel/preprocessAudio',
+  'stereoToMono/preprocessAudio',
   async (form) => {
     const formFiles = form.getAll("file") as File[]
     if (formFiles[0].type === "audio/wav") {
@@ -66,8 +65,8 @@ interface StereoToMonoRequestPayload {
   params: StereoToMonoRequest
 }
 
-export const stereoToMono = createAsyncThunk<any, StereoToMonoRequestPayload>(
-  'channel/stereoToMono', 
+export const convert = createAsyncThunk<any, StereoToMonoRequestPayload>(
+  'stereoToMono/convert', 
   async ({form, params}) => {
     const response = await ApiHelper.postForDownload('/channel/stereoToMono', form, params )
     const downloadUrl = URL.createObjectURL(response.data as any);
@@ -89,7 +88,7 @@ export const stereoToMono = createAsyncThunk<any, StereoToMonoRequestPayload>(
 )
 
 
-export const { audioMetadatasCleared, audioMetadatasUpdated, audioMetadataRemoved } = channelSlice.actions
+export const { audioMetadatasCleared, audioMetadatasUpdated, audioMetadataRemoved } = stereoToMonoSlice.actions
 
-const channelReducer = channelSlice.reducer
-export default channelReducer
+const stereoToMonoReducer = stereoToMonoSlice.reducer
+export default stereoToMonoReducer

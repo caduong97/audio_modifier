@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import UploadForm from "../components/uploads/UploadForm";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../store";
-import { audioMetadataRemoved, audioMetadatasCleared, audioMetadatasUpdated, preprocessAudio, stereoToMono } from "../store/channelSlice";
+import { audioMetadataRemoved, audioMetadatasCleared, audioMetadatasUpdated, preprocessAudio, convert } from "../store/stereoToMonoSlice";
 import { DndProvider } from "react-dnd";
 import UploadedList from "../components/uploads/UploadedList";
 import { TouchBackend } from "react-dnd-touch-backend";
@@ -15,8 +15,8 @@ import { v4 as uuidv4 } from 'uuid';
 export default function SteoreoToMono() {
   const [audioFiles, setAudioFiles] = useState<File[]>([])
   const dispatch: AppDispatch = useDispatch()
-  const preprocessStatus = useSelector((state: RootState) => state.channel.preprocessStatus)
-  const audioMetadatas = useSelector((state: RootState) => state.channel.audioMetadatas)
+  const preprocessStatus = useSelector((state: RootState) => state.stereoToMono.preprocessStatus)
+  const audioMetadatas = useSelector((state: RootState) => state.stereoToMono.audioMetadatas)
 
   const [stereoToMonoRequest, setStereoToMonoRequest] = useState<StereoToMonoRequest>({
     jobId: uuidv4(),
@@ -75,7 +75,7 @@ export default function SteoreoToMono() {
     formData.append('files', audioFiles[0])
 
     console.log("all files", formData.getAll("files"))
-    dispatch(stereoToMono({ form: formData, params: stereoToMonoRequest}))
+    dispatch(convert({ form: formData, params: stereoToMonoRequest}))
 
   }, [stereoToMonoRequest, audioFiles])
   
