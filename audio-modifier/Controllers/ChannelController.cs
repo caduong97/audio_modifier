@@ -27,6 +27,19 @@ namespace audio_modifier.Controllers
 
             await ResponseFileHelper.WriteFileToResponseBody(Response, result);
         }
-	}
+
+        [HttpPost("monoToStereo")]
+        public async Task MonoToStereo([FromForm] List<IFormFile> files, [FromQuery] MonoToStereoRequestDto requestDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                throw new Exception("Merge request model is not valid");
+            }
+
+            var result = _channelService.MonoToStereo(files.First(), requestDto);
+
+            await ResponseFileHelper.WriteFileToResponseBody(Response, result);
+        }
+    }
 }
 
