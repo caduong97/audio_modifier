@@ -4,18 +4,18 @@ import AudioMetadataBase, { AudioMetadataMp3, AudioMetadataWav } from "../models
 import ApiHelper from "../helpers/ApiHelper";
 import StereoToMonoRequest from "../models/channel/StereoToMonoRequest";
 
-interface StereoToMonoState {
+interface MonoToStereoState {
   preprocessStatus: ApiRequestStatus,
   audioMetadatas: (AudioMetadataBase | AudioMetadataWav | AudioMetadataMp3)[],
 }
 
-export const stereoToMonoSlice = createSlice({
-  name: "trim",
+export const monoToStereoSlice = createSlice({
+  name: "monoToStereo",
   initialState: {
     preprocessStatus: 'idle',
     audioMetadatas: [],
     trimStatus: "idle"
-  } as StereoToMonoState,
+  } as MonoToStereoState,
   reducers: {
     audioMetadatasCleared(state) {
       state.audioMetadatas = []
@@ -45,7 +45,7 @@ export const stereoToMonoSlice = createSlice({
 // TODO: wait for a while to see if all the preprocessAudio thunk in all the slices can be merged into one
 // see #1_190923
 export const preprocessAudio = createAsyncThunk<(AudioMetadataBase | AudioMetadataWav | AudioMetadataMp3), FormData>(
-  'stereoToMono/preprocessAudio',
+  'monoToStereo/preprocessAudio',
   async (form) => {
     const formFiles = form.getAll("file") as File[]
     if (formFiles[0].type === "audio/wav") {
@@ -66,9 +66,9 @@ interface StereoToMonoRequestPayload {
 }
 
 export const convert = createAsyncThunk<any, StereoToMonoRequestPayload>(
-  'stereoToMono/convert', 
+  'monoToStereo/convert', 
   async ({form, params}) => {
-    const response = await ApiHelper.postForDownload('/channel/stereoToMono', form, params )
+    const response = await ApiHelper.postForDownload('/channel/monoToStereo', form, params )
     const downloadUrl = URL.createObjectURL(response.data as any);
     const link = document.createElement('a');
     link.href = downloadUrl;
@@ -88,7 +88,7 @@ export const convert = createAsyncThunk<any, StereoToMonoRequestPayload>(
 )
 
 
-export const { audioMetadatasCleared, audioMetadatasUpdated, audioMetadataRemoved } = stereoToMonoSlice.actions
+export const { audioMetadatasCleared, audioMetadatasUpdated, audioMetadataRemoved } = monoToStereoSlice.actions
 
-const stereoToMonoReducer = stereoToMonoSlice.reducer
-export default stereoToMonoReducer
+const monoToStereoReducer = monoToStereoSlice.reducer
+export default monoToStereoReducer

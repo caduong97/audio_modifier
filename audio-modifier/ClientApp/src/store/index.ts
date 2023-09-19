@@ -2,12 +2,14 @@ import { configureStore } from '@reduxjs/toolkit'
 import mergeReducer from './mergeSlice'
 import trimReducer from './trimSlice'
 import stereoToMonoReducer from './stereoToMonoSlice'
+import monoToStereoReducer from './monoToStereoSlice'
 
 const store = configureStore({
   reducer: {
     merge: mergeReducer,
     trim: trimReducer,
-    stereoToMono: stereoToMonoReducer
+    stereoToMono: stereoToMonoReducer,
+    monoToStereo: monoToStereoReducer,
   }
 })
 
