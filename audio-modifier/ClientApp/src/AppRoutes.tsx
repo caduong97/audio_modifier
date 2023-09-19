@@ -7,6 +7,7 @@ import Converter from "./pages/Converter"
 import Trimmer from "./pages/Trimmer"
 import Mixer from "./pages/Mixer"
 import SteoreoToMono from "./pages/SteoreoToMono"
+import MonoToStereo from "./pages/MonoToStereo"
 
 
 export const routeConfig: RouteObject[] = [
@@ -43,6 +44,11 @@ export const routeConfig: RouteObject[] = [
         path: "/stereo-to-mono",
         id: "Stereo To Mono",
         element: <SteoreoToMono />
+      },
+      {
+        path: "/mono-to-stereo",
+        id: "Mono To Stereo",
+        element: <MonoToStereo />
       },
     ]
   },
