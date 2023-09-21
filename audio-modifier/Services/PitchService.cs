@@ -74,7 +74,7 @@ namespace audio_modifier.Services
             }
             catch (Exception e)
             {
-                throw new Exception("Cannot shift the pitch of provided audio. Error: " + e)
+                throw new Exception("Cannot shift the pitch of provided audio. Error: " + e);
             }
 
         }
