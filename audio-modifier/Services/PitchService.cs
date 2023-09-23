@@ -34,18 +34,15 @@ namespace audio_modifier.Services
             throw new NotImplementedException();
         }
 
+        // NOTE: 23.09.23 WIP. Does not yet work.
         public AudioFileResult PitchShiftWav(IFormFile file, PitchShiftRequestDto requestDto)
         {
             using var output = new MemoryStream();
 
-            var semitone = Math.Pow(2, 1.0 / 12);
-            var upOneTone = semitone * semitone;
-            var downOneTone = 1.0 / upOneTone;
-
             using var reader = new WaveFileReader(file.OpenReadStream());
 
             var pitch = new SmbPitchShiftingSampleProvider(reader.ToSampleProvider());
-            pitch.PitchFactor = (float)upOneTone;
+            pitch.PitchFactor = requestDto.Pitch;
             // Create a WaveFileWriter with the same format as the original WAV file
             using var writer = new WaveFileWriter(output, pitch.WaveFormat);
 
