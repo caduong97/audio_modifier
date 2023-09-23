@@ -3,6 +3,8 @@ import mergeReducer from './mergeSlice'
 import trimReducer from './trimSlice'
 import stereoToMonoReducer from './stereoToMonoSlice'
 import monoToStereoReducer from './monoToStereoSlice'
+import AudioMetadataBase, { AudioMetadataWav, AudioMetadataMp3 } from '../models/AudioMetadata'
+import pitchReducer from './pitchSlice'
 
 const store = configureStore({
   reducer: {
@@ -10,6 +12,7 @@ const store = configureStore({
     trim: trimReducer,
     stereoToMono: stereoToMonoReducer,
     monoToStereo: monoToStereoReducer,
+    pitch: pitchReducer
   }
 })
 
@@ -21,3 +24,8 @@ export type RootState = ReturnType<typeof store.getState>
 export type AppDispatch = typeof store.dispatch
 
 export type ApiRequestStatus = 'idle' | 'pending' | 'fulfilled' | 'rejected'
+
+export interface SliceStateBase {
+  preprocessStatus: ApiRequestStatus,
+  audioMetadatas: (AudioMetadataBase | AudioMetadataWav | AudioMetadataMp3)[]
+}
