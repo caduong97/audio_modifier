@@ -58,7 +58,7 @@ export default function SettingItem({
         }: {}}  
       >{name}</p>
       <InputGroup className={display === 'flex' ? "w-50" : "w-100"}>
-        <Input type={type} min={min} max={max} placeholder={placeholder} value={value} onChange={onValueChange} />
+        <Input type={type} min={min} max={max} step={.01} placeholder={placeholder} value={value} onChange={onValueChange} />
         { 
           unit != null &&
           <InputGroupText>

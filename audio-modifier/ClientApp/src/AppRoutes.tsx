@@ -8,6 +8,7 @@ import Trimmer from "./pages/Trimmer"
 import Mixer from "./pages/Mixer"
 import SteoreoToMono from "./pages/SteoreoToMono"
 import MonoToStereo from "./pages/MonoToStereo"
+import PitchShifter from "./pages/PitchShifter"
 
 
 export const routeConfig: RouteObject[] = [
@@ -49,6 +50,11 @@ export const routeConfig: RouteObject[] = [
         path: "/mono-to-stereo",
         id: "Mono To Stereo",
         element: <MonoToStereo />
+      },
+      {
+        path: "/pitch-shifter",
+        id: "Pitch Shifter",
+        element: <PitchShifter />
       },
     ]
   },
