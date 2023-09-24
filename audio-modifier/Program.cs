@@ -37,6 +37,8 @@ builder.Services.AddScoped<IMergeService, MergeService>();
 builder.Services.AddScoped<ITrimService, TrimService>();
 builder.Services.AddScoped<IChannelService, ChannelService>();
 builder.Services.AddScoped<IPitchService, PitchService>();
+builder.Services.AddScoped<IFadeService, FadeService>();
+
 
 var app = builder.Build();
 
