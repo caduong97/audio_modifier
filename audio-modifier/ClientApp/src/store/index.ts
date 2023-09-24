@@ -5,6 +5,7 @@ import stereoToMonoReducer from './stereoToMonoSlice'
 import monoToStereoReducer from './monoToStereoSlice'
 import AudioMetadataBase, { AudioMetadataWav, AudioMetadataMp3 } from '../models/AudioMetadata'
 import pitchReducer from './pitchSlice'
+import fadeReducer from './fadeSlice'
 
 const store = configureStore({
   reducer: {
@@ -12,7 +13,8 @@ const store = configureStore({
     trim: trimReducer,
     stereoToMono: stereoToMonoReducer,
     monoToStereo: monoToStereoReducer,
-    pitch: pitchReducer
+    pitch: pitchReducer,
+    fade: fadeReducer,
   }
 })
 
