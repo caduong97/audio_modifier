@@ -9,6 +9,7 @@ import Mixer from "./pages/Mixer"
 import SteoreoToMono from "./pages/SteoreoToMono"
 import MonoToStereo from "./pages/MonoToStereo"
 import PitchShifter from "./pages/PitchShifter"
+import FadeInOut from "./pages/FadeInOut"
 
 
 export const routeConfig: RouteObject[] = [
@@ -55,6 +56,11 @@ export const routeConfig: RouteObject[] = [
         path: "/pitch-shifter",
         id: "Pitch Shifter",
         element: <PitchShifter />
+      },
+      {
+        path: "/fade-in-out",
+        id: "Fade In Out",
+        element: <FadeInOut />
       },
     ]
   },
